@@ -1,6 +1,6 @@
 import customtkinter as ctk
-from windows import WelcomeWin, PlaygroundWin
-import ctypes
+from windows import WelcomeWin
+
 
 class MainApp(ctk.CTk):
     def __init__(self):
@@ -12,12 +12,13 @@ class MainApp(ctk.CTk):
         ctk.set_default_color_theme("themes/lavender.json")
 
     
-    def __shortkeys(self) -> None:
-        pass
+    def __shortkeys(self, event) -> None:
+        print(event.key)
 
 
-    def show(self) -> None:
-        WelcomeWin(self).show()
+    def build(self) -> None:
+        welcome_win = WelcomeWin(self)
+        welcome_win.build()
         
 
     def center_window(self) -> None:
@@ -30,7 +31,7 @@ class MainApp(ctk.CTk):
 
 
     def run(self) -> None:
-        self.show()
+        self.build()
         self.mainloop()
 
 

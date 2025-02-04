@@ -1,6 +1,8 @@
 import customtkinter as ctk
 from typing import Literal
 from PIL import Image
+import platform
+from pathlib import Path
 
 
 class SmallCardInfo(ctk.CTkFrame):
@@ -8,7 +10,7 @@ class SmallCardInfo(ctk.CTkFrame):
         super().__init__(parent, *args, **kwargs)
 
     
-    def show(self, image: ctk.CTkImage, text: str|ctk.StringVar, width: int, height: int) -> None:
+    def build(self, image: ctk.CTkImage, text: str|ctk.StringVar, width: int, height: int) -> None:
         image_label = ctk.CTkLabel(self, image=image, text="")
         image_label.pack(side="left", padx=6, pady=6, fill="both")
 
@@ -16,89 +18,97 @@ class SmallCardInfo(ctk.CTkFrame):
         label.pack(padx=6, pady=6)
 
 
-# class WindowButtonsMacOS:
-#     """Base functionality for window buttons like close, minimize, maximize"""
-#     def __init__(self, parend: ctk.CTk) -> None:
-#         self.__parent: ctk.CTk = parend
-#         self.__button_size = 13
-#         self.__corner_radius = 50
-#         self.__button_spacer = 10
-#         self.__top_spacer = 10
-#         self.__side_spacer = 20
-#         self.__close_button_colors = ("#FF5F57", "#FF453A")
-#         self.__minimize_button_colors = ("#FFBD2E", "#FFBF00")
-#         self.__maximize_button_colors = ("#28C940", "#32D74B")
-#         self.__last_x = 0
-        
 
-#     def show(self) -> None:
-#         #close button
-#         close_button = ctk.CTkButton(
-#             self.__parent, text="",
-#             width=self.__button_size,
-#             height=self.__button_size,
-#             corner_radius=self.__corner_radius,
-#             fg_color=self.__close_button_colors,
-#             command=self.__close,
-#             hover_color=("#D54C48", "#D33C2E")
-#         )
-#         close_button.grid(row=0, column=0, padx=(self.__side_spacer, self.__button_spacer), pady=self.__top_spacer)
-
-#         #minimize button
-#         self.__minimize_button = ctk.CTkButton(
-#             self.__parent, text="",
-#             width=self.__button_size,
-#             height=self.__button_size,
-#             corner_radius=self.__corner_radius,
-#             fg_color=self.__minimize_button_colors,
-#             command=self.__minimize,
-#             hover_color=("#E69D27", "#E6A400")
-#         )
-#         self.__minimize_button.grid(row=0, column=1, padx=(0, self.__button_spacer), pady=self.__top_spacer)
-
-#         #maximize button
-#         self.__maximize_button = ctk.CTkButton(
-#             self.__parent, text="",
-#             width=self.__button_size,
-#             height=self.__button_size,
-#             corner_radius=self.__corner_radius,
-#             fg_color=self.__maximize_button_colors,
-#             hover_color=("#1F9D32", "#2B9D3D")
-#         )
-#         self.__maximize_button.grid(row=0, column=2, padx=0, pady=self.__top_spacer)
-#         self.__maximize_button.bind("<B1-Motion>", self.__on_drag)
-#         self.__maximize_button.bind("<ButtonRelease-1>", self.__on_button_release)
-
-        
-#     def __close(self) -> None:
-#         self.__parent.destroy()
+class TopBarWidget(ctk.CTkFrame):
+    def __init__(self, parent: ctk.CTk, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
 
 
-#     def __minimize(self) -> None:
-#         self.__parent.iconify()
+
+class EntryWidget(ctk.CTkEntry):
+    """Extended Label widget. For first create object, then call place/pack/grid method"""
+    def __init__(self, parent: ctk.CTk, *args, **kwargs) -> None:
+        super().__init__(parent, *args, **kwargs)
+        self.__shortkeys()
+
+    
+    def __shortkeys(self) -> None:
+        if platform.system() == "Darwin":
+            self.bind("<Command-BackSpace>", self.__erase_text)
+        else:
+            self.bind("<Control-BackSpace>", self.__erase_text)
 
 
-#     def __half_maximize(self, x: int) -> None:
-#         width: int = self.__parent.winfo_screenwidth()
-#         height: int = self.__parent.winfo_screenheight()
-#         if x > 50:
-#             self.__parent.geometry(f'{width//2}x{height-22}+{width//2}+{0}')
-#         elif x < -50:
-#             self.__parent.geometry(f'{width//2}x{height-22}+{0}+{0}')
-#         else:
-#             self.__parent.attributes("-fullscreen", not self.__parent.current_fullscreen)
-#             self.__parent.current_fullscreen = not self.__parent.current_fullscreen
-
-#             if self.__parent.current_fullscreen:
-#                 self.__minimize_button.configure(state="disabled", fg_color="#A0A0A0")
-#             else:
-#                 self.__minimize_button.configure(state="normal", fg_color=self.__minimize_button_colors)
-        
-#         self.__last_x = 0
+    def __erase_text(self, event) -> None:
+        self.delete(0, 'end')
 
 
-#     def __on_drag(self, event):
-#         self.__last_x = event.x
+class FoldersWidget(ctk.CTkFrame):
+    def __init__(self, parent: ctk.CTk, *args, **kwargs) -> None:
+        super().__init__(parent, *args, **kwargs)
+        self.__parent = parent
+        self.__is_builded = False
+        self.pack_propagate(False)
+        self.__foulder_icon: Path = Path("static/icons/folder_ico.png")
+        self.__foulder_icon_img = ctk.CTkImage(Image.open(self.__foulder_icon), size=(20, 16))
 
-#     def __on_button_release(self, event):
-#        self.__half_maximize(self.__last_x)
+
+    def build(self) -> None:
+        if not self.__is_builded:
+            self.__is_builded = True
+            self.update_idletasks()
+            self.create_new_folder("Folder 1")
+            self.create_new_folder("Folder 2")
+            self.create_new_folder("Folder 3")
+            self.create_new_folder("Folder 4")
+
+            add_folder_btn = ctk.CTkButton(self, text="+", command=self.on_add_folder_click, corner_radius=50, width=20, height=20)
+            add_folder_btn.pack_propagate(False)
+            add_folder_btn.pack(side="bottom", pady=4)
+
+    
+    def on_add_folder_click(self, event=None):
+        self.create_new_folder("New Folder")
+
+
+    def create_new_folder(self, name: str) -> None:
+        folder_bar = ctk.CTkButton(
+            self,
+            text=name,
+            command=None,
+            corner_radius=1,
+            width=self.winfo_width(),
+            height=20,
+            image=self.__foulder_icon_img,
+            compound="left",
+            fg_color=self.__parent.cget("fg_color"),
+            anchor="w"
+        )
+        folder_bar.pack(side="top", fill="x", pady=4)
+
+
+    def destroy(self) -> None:
+        if self.__is_builded:
+            self.__is_builded = False
+            for widget in self.__parent.winfo_children():
+                widget.destroy()
+
+    def __shortkeys(self) -> None:
+        pass
+
+
+    def __on_click(self, event) -> None:
+        print(event)
+        print(event.__dict__)
+
+
+class NotesScrollWidget:
+    pass
+
+
+class NoteWidgetWindow:
+    pass
+
+
+class EditNoteFieldWidget:
+    pass

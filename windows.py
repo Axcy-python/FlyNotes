@@ -1,10 +1,10 @@
 import customtkinter as ctk
-from PIL import Image, ImageTk
-from widgets import SmallCardInfo
+from PIL import Image
+from widgets import SmallCardInfo, EntryWidget, FoldersWidget
 
 
 class WelcomeWin:
-    def __init__(self, parent: ctk.CTk):
+    def __init__(self, parent: ctk.CTk) -> None:
         self.__parent: ctk.CTk = parent
         self.__parent.resizable(False, False)
         self.__cards_data: list[dict[str, ctk.CTkImage]] = [
@@ -15,28 +15,46 @@ class WelcomeWin:
         ]
 
         self.__longest_text_width = self.__longest_text()
+        self.__is_builded = False
 
 
-    def show(self) -> None:
-        title_label = ctk.CTkLabel(self.__parent, text="Welcome to Fly Notes", font=ctk.CTkFont(size=38, weight="bold"))
-        title_label.pack(pady = (60, 0))
+    def build(self) -> None:
+        if not self.__is_builded:
+            self.__shortkeys()
+            self.__is_builded = True
 
-        title_info = ctk.CTkLabel(self.__parent, text="Fly Notes — quick and effortless notes on the go!", font=ctk.CTkFont(size=14))
-        title_info.pack(pady = (0, 60))
+            title_label = ctk.CTkLabel(self.__parent, text="Welcome to Fly Notes", font=ctk.CTkFont(size=38, weight="bold"))
+            title_label.pack(pady = (60, 0))
 
-        for card_data in self.__cards_data:
-            print(self.__longest_text_width)
-            card: ctk.CTkFrame = SmallCardInfo(self.__parent)
-            card.show(card_data["image"], card_data["text"], width=self.__longest_text_width, height=40)
-            card.pack(pady=4)
+            title_info = ctk.CTkLabel(self.__parent, text="Fly Notes — quick and effortless notes on the go!", font=ctk.CTkFont(size=14))
+            title_info.pack(pady = (0, 60))
 
-        
-        continue_button = ctk.CTkButton(self.__parent, text="Continue", width=20, command=self.__continue)
-        continue_button.pack(side="bottom", pady=(0, 20))
+            for card_data in self.__cards_data:
+                card: ctk.CTkFrame = SmallCardInfo(self.__parent)
+                card.build(card_data["image"], card_data["text"], width=self.__longest_text_width, height=40)
+                card.pack(pady=4)
 
 
-    def __continue(self) -> None:
-        print("Continue button pressed")
+            continue_button = ctk.CTkButton(self.__parent, text="Continue", width=20, command=self.__continue)
+            continue_button.pack(side="bottom", pady=(0, 20))
+
+
+    def destroy(self) -> None:
+        if self.__is_builded:
+            self.__is_builded = False
+            for widget in self.__parent.winfo_children():
+                widget.destroy()
+            self.__unbind()
+
+
+    def __continue(self, *args) -> None:
+        self.destroy()
+        playground_win = PlaygroundWin(self.__parent)
+        playground_win.build()
+
+
+    def __unbind(self) -> None:
+        self.__parent.unbind("<Return>")
 
 
     def __longest_text(self) -> int:
@@ -50,16 +68,24 @@ class WelcomeWin:
 
 
     def __shortkeys(self) -> None:
-        pass
+        self.__parent.bind("<Return>", self.__continue)
     
 
 class PlaygroundWin:
     def __init__(self, parent: ctk.CTk) -> None:
-        pass
+        self.__parent: ctk.CTk = parent
+        self.__is_builded = False
+        self.__parent.geometry("1080x720")
+        self.__parent.resizable(True, True)
+        self.__parent.center_window()
 
 
-    def show(self) -> None:
-        pass
+    def build(self) -> None:
+        if not self.__is_builded:
+            self.__is_builded = True
+            folder_widget = FoldersWidget(self.__parent, width=190, fg_color="red")
+            folder_widget.pack(side="left", fill="y")
+            folder_widget.build()
 
 
     def __shortkeys(self) -> None:
