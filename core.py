@@ -1,6 +1,7 @@
 import customtkinter as ctk
-from windows import WelcomeWin
-
+from windows import WelcomeWin, PlaygroundWin
+import os
+from database import *
 
 class MainApp(ctk.CTk):
     def __init__(self):
@@ -17,8 +18,14 @@ class MainApp(ctk.CTk):
 
 
     def build(self) -> None:
-        welcome_win = WelcomeWin(self)
-        welcome_win.build()
+        if os.path.exists("./database.db"):
+            build_win = PlaygroundWin(self)
+            build_win.build()
+        else:
+            build_win = WelcomeWin(self)
+            build_win.build()
+        
+        db.create_tables([Folder, Note])
         
 
     def center_window(self) -> None:

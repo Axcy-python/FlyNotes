@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from PIL import Image
-from widgets import SmallCardInfo, EntryWidget, FoldersWidget
+from widgets import SmallCardInfo, EntryWidget, FoldersWidget, NotesScrollWidget
 
 
 class WelcomeWin:
@@ -83,10 +83,19 @@ class PlaygroundWin:
     def build(self) -> None:
         if not self.__is_builded:
             self.__is_builded = True
-            folder_widget = FoldersWidget(self.__parent, width=190, fg_color="red")
+            #side bar 
+            folder_widget = FoldersWidget(self.__parent, width=190)
             folder_widget.pack(side="left", fill="y")
             folder_widget.build()
 
+            #scrollable notes list
+            scroll_notes_widget = NotesScrollWidget(self.__parent, width = 240)
+            scroll_notes_widget.build()
+            scroll_notes_widget.pack(side="left", fill="y")
 
     def __shortkeys(self) -> None:
         pass
+
+
+class NoteWidgetWindow:
+    pass

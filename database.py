@@ -14,7 +14,7 @@ class BaseModel(Model):
 
 
 class Folder(BaseModel):
-    folder_name:CharField = CharField(max_length=16)
+    folder_name:CharField = CharField(max_length=32)
 
     class Meta:
         db_table = "folders"
